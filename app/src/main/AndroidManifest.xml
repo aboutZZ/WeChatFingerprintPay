@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="cn.elva.wcfp">
+    <uses-feature android:name="android.hardware.fingerprint" android:required="true"/>
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true"/>
+        <meta-data
+            android:name="xposeddescription"
+            android:value="让带指纹的手机支持微信的指纹支付"/>
+        <meta-data
+            android:name="xposedminversion"
+            android:value="54"/>
+
+        <activity
+            android:name="cn.elva.wcfp.ui.PaySettingActivity"
+            android:label="微信指纹支付">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WCFP</string>
+    <string name="setting_enable">Enable</string>
+    <string name="setting_enable_description">WeChat fingerprint payment switch</string>
+    <string name="setting_pwd">Payment password</string>
+    <string name="setting_pwd_description">Easy, your password will be encrypted</string>
+    <string name="title_setting">Settings</string>
+</resources>

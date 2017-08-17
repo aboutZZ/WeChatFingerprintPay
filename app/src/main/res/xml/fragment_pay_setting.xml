@@ -1,0 +1,25 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <PreferenceCategory android:title="@string/title_setting">
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:title="@string/setting_enable"
+            android:key="enable"
+            android:summary="@string/setting_enable_description"
+            android:persistent="true" />
+        <EditTextPreference
+            android:dependency="enable"
+            android:key="pwd"
+            android:numeric="integer"
+            android:password="true"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/setting_pwd_description"
+            android:title="@string/setting_pwd"
+            android:persistent="false"/>
+    </PreferenceCategory>
+</PreferenceScreen>

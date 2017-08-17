@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">微信指纹支付</string>
+    <string name="setting_enable">启用</string>
+    <string name="setting_enable_description">微信指纹支付总开关</string>
+    <string name="setting_pwd">支付密码</string>
+    <string name="setting_pwd_description">您输入的密码将会加密存储</string>
+    <string name="title_setting">设置</string>
+</resources>
