@@ -27,10 +27,12 @@ public class PaySettingActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        // Replace with PaySettingFragment
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.replace(android.R.id.content, new PaySettingFragment());
-        fragmentTransaction.commit();
+        // Display the fragment as the main content
+        if (savedInstanceState == null) {
+            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+            fragmentTransaction.replace(android.R.id.content, new PaySettingFragment());
+            fragmentTransaction.commit();
+        }
     }
 
     public static class PaySettingFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
@@ -45,10 +47,12 @@ public class PaySettingActivity extends Activity {
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
             mContext = getActivity();
-            sharedPreferences = mContext.getSharedPreferences(VersionInfo.SHARED_PREFERENCE_KEY, MODE_PRIVATE);
             super.onCreate(savedInstanceState);
+            //sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+            getPreferenceManager().setSharedPreferencesMode(MODE_WORLD_READABLE);
             // Load PaySettingFragment from xml resource
             addPreferencesFromResource(R.xml.fragment_pay_setting);
+            sharedPreferences = getPreferenceScreen().getSharedPreferences();
             prefEnable = findPreference(VersionInfo.PREF_KEY_ENABLE);
             prefPwd = findPreference(VersionInfo.PREF_KEY_PWD);
             // Add preference change listener
@@ -62,7 +66,7 @@ public class PaySettingActivity extends Activity {
             WCFPXSharedPreferencesUtil.notifyReload();
             switch (preference.getKey()) {
                 case VersionInfo.PREF_KEY_ENABLE:
-                    return true;
+                    break;
                 case VersionInfo.PREF_KEY_PWD:
                     spEditor = sharedPreferences.edit();
                     final String android_id = WCFPXSharedPreferencesUtil.getID(getContext());
@@ -73,7 +77,7 @@ public class PaySettingActivity extends Activity {
                 default:
                     break;
             }
-            return false;
+            return true;
         }
 
         @Override

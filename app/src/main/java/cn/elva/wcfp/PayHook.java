@@ -17,17 +17,17 @@ import android.widget.Toast;
 
 import cn.elva.wcfp.utils.FingerprintHandler;
 import de.robv.android.xposed.IXposedHookLoadPackage;
-import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * Created by Elva on 2017/8/16.
- * WeChat payment hook
+ * WeChat payment hook logic class
  */
 
-public class PayHooker implements IXposedHookLoadPackage {
+public class PayHook implements IXposedHookLoadPackage {
     private static final String PKG_NAME = "com.tencent.mm";
     private FingerprintHandler fHandler = null;
     private Activity paymentLayer = null;
@@ -36,6 +36,11 @@ public class PayHooker implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         if (lpparam.packageName.equals(PKG_NAME)) {
+            if (!WCFPXSharedPreferencesUtil.isModuleEnabled()) {
+                XposedBridge.log("Option!!!!!!!!!!");
+                return;
+            }
+            XposedBridge.log("Start hooking WeChat");
             Context sysContext = (Context) XposedHelpers.callMethod(
                     XposedHelpers.callStaticMethod(
                             XposedHelpers.findClass("android.app.ActivityThread", null),
@@ -45,17 +50,28 @@ public class PayHooker implements IXposedHookLoadPackage {
             VersionInfo.init(pkgInfo.versionName, pkgInfo.versionCode);
             // Start hooking
             XposedHelpers.findAndHookMethod(
-                    VersionInfo.keyboardViewClassName,
+                    VersionInfo.payUIClassName,
                     lpparam.classLoader,
-                    "onResume",
+                    "onCreate",
                     Bundle.class,
                     new XC_MethodHook() {
                         @Override
-                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            XposedBridge.log("pay UI onCreate");
+                        }
+                    });
+            XposedHelpers.findAndHookMethod(
+                    VersionInfo.payUIClassName,
+                    lpparam.classLoader,
+                    "onResume",
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                             if (!WCFPXSharedPreferencesUtil.isModuleEnabled()) {
                                 fHandler = null;
                                 return;
                             }
+                            XposedBridge.log("pay UI onResume");
                             paymentLayer = (Activity) param.thisObject;
                             if (fHandler == null) {
                                 initFingerPrint(paymentLayer);
@@ -68,24 +84,26 @@ public class PayHooker implements IXposedHookLoadPackage {
                         }
                     });
             XposedHelpers.findAndHookMethod(
-                    VersionInfo.keyboardViewClassName,
+                    VersionInfo.payUIClassName,
                     lpparam.classLoader,
                     "onPause",
                     new XC_MethodHook() {
                         @Override
-                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            XposedBridge.log("pay UI onPause");
                             if (fHandler != null) {
                                 fHandler.cancelAuth();
                             }
                         }
                     });
             XposedHelpers.findAndHookMethod(
-                    VersionInfo.keyboardViewClassName,
+                    VersionInfo.payUIClassName,
                     lpparam.classLoader,
                     "onDestroy",
                     new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            XposedBridge.log("pay UI onDestroy");
                             if (fHandler != null) {
                                 fHandler.cancelAuth();
                             }
@@ -101,6 +119,7 @@ public class PayHooker implements IXposedHookLoadPackage {
                     new XC_MethodHook() {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            XposedBridge.log("pwdView constructor");
                             if (!WCFPXSharedPreferencesUtil.isModuleEnabled()) {
                                 return;
                             }
@@ -157,6 +176,7 @@ public class PayHooker implements IXposedHookLoadPackage {
                     "Please enable lock screen security in your device's Settings",
                     Toast.LENGTH_LONG).show();
         } else {
+            XposedBridge.log("Create new FingerprintHandler");
             fHandler = new FingerprintHandler(context, etInputEditText);
         }
 
