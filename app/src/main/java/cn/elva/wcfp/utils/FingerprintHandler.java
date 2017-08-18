@@ -8,7 +8,10 @@ import android.Manifest;
 import android.os.Build;
 import android.os.CancellationSignal;
 import android.support.annotation.NonNull;
+import android.widget.EditText;
 import android.widget.Toast;
+
+import cn.elva.wcfp.WCFPXSharedPreferencesUtil;
 
 /**
  * Created by Elva on 2017/8/16.
@@ -23,17 +26,20 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
     private CancellationSignal cancellationSignal = null;
     private Context mContext = null;
+    private EditText mEditText = null;
 
-    public FingerprintHandler(@NonNull Context mContext) {
+    public FingerprintHandler(@NonNull Context mContext, @NonNull EditText mEditText) {
         this.mContext = mContext;
+        this.mEditText = mEditText;
     }
 
     public void startAuth(FingerprintManager manager, FingerprintManager.CryptoObject cryptoObject) {
 
-        if (mContext.checkSelfPermission(Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(mContext,"Fingerprint permission denied",Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (mContext != null)
+            if (mContext.checkSelfPermission(Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(mContext, "Fingerprint permission denied", Toast.LENGTH_SHORT).show();
+                return;
+            }
         cancellationSignal = new CancellationSignal();
         manager.authenticate(cryptoObject, cancellationSignal, 0, this, null);
     }
@@ -47,23 +53,37 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
     @Override
     public void onAuthenticationError(int errMsgId, CharSequence errString) {
-        Toast.makeText(mContext, errString, Toast.LENGTH_SHORT).show();
+        showToast(errString);
     }
 
     @Override
     public void onAuthenticationFailed() {
-        Toast.makeText(mContext, "Authentication failed", Toast.LENGTH_LONG).show();
+        showToast("Authentication failed");
     }
 
     @Override
     public void onAuthenticationHelp(int helpMsgId, CharSequence helpString) {
-        Toast.makeText(mContext, helpString, Toast.LENGTH_LONG).show();
+        showToast(helpString);
     }
 
     @Override
     public void onAuthenticationSucceeded(
             FingerprintManager.AuthenticationResult result) {
-        Toast.makeText(mContext, "Success!", Toast.LENGTH_LONG).show();
+        String pwd = WCFPXSharedPreferencesUtil.getPwd(mContext);
+        //TODO 这里逻辑有待修改
+        if (pwd != null && pwd.length() > 0) {
+            if (mEditText != null) {
+                mEditText.setText(pwd);
+            }
+        } else {
+            showToast("Sorry, but you have not set the password in WeChatFingerprintPay yet");
+        }
+    }
+
+    private void showToast(CharSequence msg) {
+        if (mContext != null) {
+            Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
+        }
     }
 
 }

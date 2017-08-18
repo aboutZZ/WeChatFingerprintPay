@@ -14,7 +14,7 @@
             android:value="true"/>
         <meta-data
             android:name="xposeddescription"
-            android:value="让带指纹的手机支持微信的指纹支付"/>
+            android:value="@string/module_description"/>
         <meta-data
             android:name="xposedminversion"
             android:value="54"/>

@@ -8,6 +8,11 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import cn.elva.wcfp.utils.FingerprintHandler;
@@ -22,9 +27,11 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
  * WeChat payment hook
  */
 
-public class PayHooker implements IXposedHookZygoteInit, IXposedHookLoadPackage {
+public class PayHooker implements IXposedHookLoadPackage {
     private static final String PKG_NAME = "com.tencent.mm";
     private FingerprintHandler fHandler = null;
+    private Activity paymentLayer = null;
+    private EditText etInputEditText = null;
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
@@ -45,13 +52,17 @@ public class PayHooker implements IXposedHookZygoteInit, IXposedHookLoadPackage 
                     new XC_MethodHook() {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                            Activity act = (Activity) param.thisObject;
+                            if (!WCFPXSharedPreferencesUtil.isModuleEnabled()) {
+                                fHandler = null;
+                                return;
+                            }
+                            paymentLayer = (Activity) param.thisObject;
                             if (fHandler == null) {
-                                initFingerPrint(act);
+                                initFingerPrint(paymentLayer);
                             }
                             if (fHandler != null) {
                                 fHandler.startAuth(
-                                        (FingerprintManager) act.getSystemService(Context.FINGERPRINT_SERVICE),
+                                        (FingerprintManager) paymentLayer.getSystemService(Context.FINGERPRINT_SERVICE),
                                         null);
                             }
                         }
@@ -79,16 +90,51 @@ public class PayHooker implements IXposedHookZygoteInit, IXposedHookLoadPackage 
                                 fHandler.cancelAuth();
                             }
                             fHandler = null;
+                            paymentLayer = null;
+                            etInputEditText = null;
+                        }
+                    });
+            XposedHelpers.findAndHookConstructor(
+                    VersionInfo.pwdViewClassName,
+                    lpparam.classLoader,
+                    Context.class,
+                    new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            if (!WCFPXSharedPreferencesUtil.isModuleEnabled()) {
+                                return;
+                            }
+                            final RelativeLayout pwdViewLayout = (RelativeLayout) XposedHelpers.getObjectField(param.thisObject, VersionInfo.pwdViewLayoutName);
+                            // Hide password view
+                            etInputEditText = (EditText) XposedHelpers.getObjectField(pwdViewLayout, VersionInfo.pwdViewEditTxtWidgetName);
+                            etInputEditText.setVisibility(View.GONE);
+                            // Set payment dialog title
+                            final TextView tvTitle = (TextView) XposedHelpers.getObjectField(param.thisObject, VersionInfo.pwdViewTitleWidgetName);
+                            tvTitle.setText("支付指纹验证");
+                            // Hide keyboard
+                            final View vKeyboard = (View) XposedHelpers.getObjectField(param.thisObject, VersionInfo.pwdKeyboardWidgetName);
+                            vKeyboard.setVisibility(View.GONE);
+                            final RelativeLayout fpIconRL = new RelativeLayout(paymentLayer);
+                            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                            layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+                            fpIconRL.setLayoutParams(layoutParams);
+                            ImageView fpIconImgView = new ImageView(paymentLayer);
+                            fpIconImgView.setImageResource(VersionInfo.fpImageResourceID);
+                            fpIconRL.addView(fpIconImgView);
+                            pwdViewLayout.addView(fpIconRL);
+                            fpIconImgView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    pwdViewLayout.removeView(fpIconRL);
+                                    etInputEditText.setVisibility(View.VISIBLE);
+                                    vKeyboard.setVisibility(View.VISIBLE);
+                                    tvTitle.setText("请输入支付密码");
+                                }
+                            });
                         }
                     });
         }
     }
-
-    @Override
-    public void initZygote(StartupParam startupParam) throws Throwable {
-
-    }
-
 
     private void initFingerPrint(Context context) {
         KeyguardManager keyguardManager =
@@ -111,7 +157,7 @@ public class PayHooker implements IXposedHookZygoteInit, IXposedHookLoadPackage 
                     "Please enable lock screen security in your device's Settings",
                     Toast.LENGTH_LONG).show();
         } else {
-            fHandler = new FingerprintHandler(context);
+            fHandler = new FingerprintHandler(context, etInputEditText);
         }
 
     }
