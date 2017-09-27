@@ -5,5 +5,5 @@ Some of the principles refer to the code of <a href="https://github.com/dss16694
 ## Support version
 Only specific version below is supported, so check your WeChat version first
 - 6.3.30
-- 6.5.8
-- 6.5.10
+- ~~6.5.8~~
+- ~~6.5.10~~
