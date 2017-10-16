@@ -36,7 +36,7 @@ public class WCFPXSharedPreferencesUtil {
         String encPwd = getXSPInstance().getString(VersionInfo.PREF_KEY_PWD, null);
         if (encPwd != null) {
             final String key = AESHelper.encrypt(getID(mContext), VersionInfo.DU_EN_KEY);
-            AESHelper.decrypt(encPwd, key);
+            encPwd = AESHelper.decrypt(encPwd, key);
         }
         return encPwd;
     }

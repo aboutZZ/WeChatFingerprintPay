@@ -1,10 +1,13 @@
 <resources>
-    <string name="app_name">ZZ微信指纹支付</string>
+    <string name="app_name">X微信指纹支付</string>
     <string name="title_setting">设置</string>
     <string name="setting_enable">启用</string>
     <string name="setting_enable_description">微信指纹支付总开关</string>
     <string name="setting_pwd">支付密码</string>
     <string name="setting_pwd_description">您输入的密码将会加密存储</string>
     <string name="module_description">使尚未适配的机型使用指纹支付</string>
+    <string name="hint_not_support">检测到不支持的微信版本，本模块将不会生效</string>
+    <string name="hint_fp_pay">支付指纹验证</string>
+    <string name="hint_wc_not_install">尚未安装微信</string>
 
 </resources>

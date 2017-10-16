@@ -28,8 +28,11 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     private Context mContext = null;
     private EditText mEditText = null;
 
-    public FingerprintHandler(@NonNull Context mContext, @NonNull EditText mEditText) {
+    public FingerprintHandler(@NonNull Context mContext) {
         this.mContext = mContext;
+    }
+
+    public void setmEditText(EditText mEditText) {
         this.mEditText = mEditText;
     }
 
@@ -69,11 +72,15 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     @Override
     public void onAuthenticationSucceeded(
             FingerprintManager.AuthenticationResult result) {
+
         String pwd = WCFPXSharedPreferencesUtil.getPwd(mContext);
         //TODO 这里逻辑有待修改
         if (pwd != null && pwd.length() > 0) {
             if (mEditText != null) {
                 mEditText.setText(pwd);
+            }
+            else {
+                showToast("Error: mEditText null");
             }
         } else {
             showToast("Sorry, but you have not set the password in WeChatFingerprintPay yet");
