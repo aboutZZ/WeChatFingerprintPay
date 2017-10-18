@@ -13,7 +13,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
  */
 
 public class VersionInfo {
-    public static final String PKG_NAME = "cn.elva.wcfp";
+    public static final String PKG_NAME = "com.tencent.mm";
     public static final String PREF_KEY_ENABLE = "enable";
     public static final String PREF_KEY_PWD = "pwd";
     public static final String DU_EN_KEY = "ssg9W5h7va0vhmMU";

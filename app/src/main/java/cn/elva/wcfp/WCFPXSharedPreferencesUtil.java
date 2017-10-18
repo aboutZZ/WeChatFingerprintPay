@@ -3,6 +3,8 @@ package cn.elva.wcfp;
 import android.content.Context;
 import android.provider.Settings;
 
+import java.io.File;
+
 import cn.elva.wcfp.utils.AESHelper;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
@@ -19,7 +21,8 @@ public class WCFPXSharedPreferencesUtil {
 
     private static XSharedPreferences getXSPInstance() {
         if (wcXSP == null) {
-            wcXSP = new XSharedPreferences(WCFPXSharedPreferencesUtil.class.getPackage().getName());
+            //wcXSP = new XSharedPreferences(WCFPXSharedPreferencesUtil.class.getPackage().getName());
+            wcXSP = new XSharedPreferences(new File("/data/data/cn.elva.wcfp/shared_prefs/cn.elva.wcfp_preferences.xml"));
             wcXSP.makeWorldReadable();
             wcXSP.reload();
         } else {

@@ -6,8 +6,11 @@
     <string name="setting_pwd">支付密码</string>
     <string name="setting_pwd_description">您输入的密码将会加密存储</string>
     <string name="module_description">使尚未适配的机型使用指纹支付</string>
-    <string name="hint_not_support">检测到不支持的微信版本，本模块将不会生效</string>
+    <string name="hint_not_support">检测到不支持的微信版本(%1$d)，本模块将不会生效</string>
     <string name="hint_fp_pay">支付指纹验证</string>
     <string name="hint_wc_not_install">尚未安装微信</string>
+    <string name="title_error">错误</string>
+    <string name="error_six_digit">请输入六位数数字</string>
+    <string name="hint_confirm">确定</string>
 
 </resources>

@@ -1,6 +1,7 @@
 package cn.elva.wcfp.ui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -15,7 +16,8 @@ import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.widget.Toast;
 
-import cn.elva.wcfp.PayHook;
+import java.io.File;
+
 import cn.elva.wcfp.R;
 import cn.elva.wcfp.VersionInfo;
 import cn.elva.wcfp.WCFPXSharedPreferencesUtil;
@@ -54,18 +56,20 @@ public class PaySettingActivity extends Activity {
             //TODO Fix preference issues in Nougat
             //sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
             //getPreferenceManager().setSharedPreferencesMode(MODE_WORLD_READABLE);
+
             // Load PaySettingFragment from xml resource
             addPreferencesFromResource(R.xml.fragment_pay_setting);
             sharedPreferences = getPreferenceScreen().getSharedPreferences();
             prefEnable = findPreference(VersionInfo.PREF_KEY_ENABLE);
             prefPwd = findPreference(VersionInfo.PREF_KEY_PWD);
             try {
-                if (!VersionInfo.checkVersion(mContext.getPackageManager().getPackageInfo(PKG_NAME, 0).versionCode)) {
-                    onError(R.string.hint_not_support);
+                int versionCode = mContext.getPackageManager().getPackageInfo(PKG_NAME, 0).versionCode;
+                if (!VersionInfo.checkVersion(versionCode)) {
+                    onError(getString(R.string.hint_not_support, versionCode));
                     return;
                 }
             } catch (PackageManager.NameNotFoundException e) {
-                onError(R.string.hint_wc_not_install);
+                onError(getString(R.string.hint_wc_not_install));
                 Toast.makeText(mContext, getString(R.string.hint_wc_not_install), Toast.LENGTH_LONG).show();
                 return;
             }
@@ -76,12 +80,31 @@ public class PaySettingActivity extends Activity {
             prefPwd.setOnPreferenceClickListener(this);
         }
 
-        private void onError(int resId) {
-            Spannable summary = new SpannableString(getString(resId));
+        private void onError(String msg) {
+            Spannable summary = new SpannableString(msg);
             summary.setSpan(new ForegroundColorSpan(mContext.getColor(R.color.colorError)), 0, summary.length(), 0);
             prefEnable.setSummary(summary);
             prefEnable.setEnabled(false);
             prefEnable.setShouldDisableView(true);
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            final File dataDir = new File(getActivity().getApplicationInfo().dataDir);
+            final File prefsDir = new File(dataDir, "shared_prefs");
+            final File prefsFile = new File(prefsDir, getPreferenceManager().getSharedPreferencesName() + ".xml");
+            if (prefsFile.exists()) {
+                Toast.makeText(mContext, "xxx", Toast.LENGTH_LONG).show();
+                dataDir.setReadable(true, false);
+                dataDir.setExecutable(true, false);
+
+                prefsDir.setReadable(true, false);
+                prefsDir.setExecutable(true, false);
+
+                prefsFile.setReadable(true, false);
+                prefsFile.setExecutable(true, false);
+            }
         }
 
         @Override
@@ -91,6 +114,14 @@ public class PaySettingActivity extends Activity {
                 case VersionInfo.PREF_KEY_ENABLE:
                     break;
                 case VersionInfo.PREF_KEY_PWD:
+                    if (!((String) newValue).matches("\\d{6}")) {
+                        new AlertDialog.Builder(getActivity())
+                                .setTitle(getString(R.string.title_error))
+                                .setPositiveButton(getString(R.string.hint_confirm), null)
+                                .setMessage(getString(R.string.error_six_digit))
+                                .show();
+                        return false;
+                    }
                     spEditor = sharedPreferences.edit();
                     final String android_id = WCFPXSharedPreferencesUtil.getID(getContext());
                     final String key = AESHelper.encrypt(android_id, VersionInfo.DU_EN_KEY);
@@ -106,7 +137,7 @@ public class PaySettingActivity extends Activity {
         @Override
         public boolean onPreferenceClick(Preference preference) {
             if (preference.getKey().equals(VersionInfo.PREF_KEY_PWD)) {
-                ((EditTextPreference) preference).setText(sharedPreferences.getString("pwd", ""));
+                ((EditTextPreference) preference).setText("");
             }
             return true;
         }

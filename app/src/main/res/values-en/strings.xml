@@ -7,7 +7,10 @@
     <string name="setting_pwd_description">Easy, your password will be encrypted</string>
     <string name="title_setting">Settings</string>
     <string name="module_description">Use fingerprint payment in WeChat</string>
-    <string name="hint_not_support">Unsupported version installed, this module won\'t work.</string>
+    <string name="hint_not_support">Unsupported version installed(%1$d), this module won\'t work.</string>
     <string name="hint_fp_pay">Verify your fingerprint</string>
     <string name="hint_wc_not_install">Sorry but you don\'t install WeChat yet</string>
+    <string name="title_error">Error</string>
+    <string name="error_six_digit">Plesase input six digit password</string>
+    <string name="hint_confirm">OK</string>
 </resources>
